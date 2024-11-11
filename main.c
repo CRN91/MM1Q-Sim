@@ -2,11 +2,33 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <float.h>
+
+#define Q_LIMIT 100
+#define BUSY 1
+#define IDLE 0
+
+float mean_interarrival, mean_service, uniform_rand, sim_clock, time_last_event;
+int delays_required, num_in_q, server_status;
+float event_list[2] = {0};
+float *event_list_ptr = event_list;
 
 /* Initialises the sim */
 void initialise_sim()
 {
-
+  sim_clock = 0.0;
+  num_in_q = 0;
+  time_last_event = 0;
+  server_status = IDLE;
+  
+  *(event_list_ptr + 1) = FLT_MAX; 
+  /* printf("pointer: %d\n", event_list_ptr);
+  printf("value: %f", *event_list_ptr); */
+  
+  for (int i = 0; i < 2; i++){
+    printf("value: %f\n", event_list[i]);
+  }
+  
 }
 
 /* Update time average stats */
@@ -56,13 +78,7 @@ float gen_rand_exponential(float uniform, float beta)
 
 int main()
 {
-  // Seed random number generator with current time once at start of program
-  srand(time(NULL));
-
   FILE *config, *report;
-  float mean_interarrival, mean_service, uniform_rand;
-  int delays_required;
-  
   // Open files
   config = fopen("config.in","r");
   report = fopen("report.txt","w");
@@ -85,6 +101,9 @@ int main()
   
   // Write heading of report
   fprintf(report, "Test write");
+  
+  // Initialise sim
+  initialise_sim();
   
   // Simulation Loop
   int delays;
