@@ -1,4 +1,53 @@
 #include <stdio.h>
+#include <math.h>
+
+/* Initialises the sim */
+void initialise_sim()
+{
+
+}
+
+/* Update time average stats */
+void update_time_avg_stats()
+{
+
+}
+
+/* Calculates and writes report to file */
+void report()
+{
+
+}
+
+/* Determine next event and advance sim clock */
+void timing()
+{
+
+}
+
+/* Next departure event */
+void depart()
+{
+
+}
+
+/* Next arrival event */
+void arrive()
+{
+
+}
+
+/* Generate random uniformly distribute variate between 0 and 1 */
+float random_uniform()
+{
+
+}
+
+/* Generate random exponentially distributed variate between 0 and 1 */
+float random_exponential(float uniform)
+{
+
+} 
 
 int main()
 {
