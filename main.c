@@ -13,7 +13,7 @@ int main()
   /* Check files exist */
   if(config == NULL || report == NULL)
   {
-    printf("File read error!");
+    printf("Error! File not read.");
     exit(1);
   }  
   
@@ -23,10 +23,30 @@ int main()
   
   /* Write heading of report */
   fprintf(report, "Test write");
-  fclose(report);
   
   /* Simulation Loop */
+  int delays;
+  while (delays < delays_required)
+  {
+    delays = 1000;
+    /* Timing event to determine next event */
+    
+    /* Update Time Average Statistical Counters */
+    
+    /* Call correct event function */
+    int event_type = 1;
+    switch (event_type){
+      case 1:
+        break;
+      case 2:
+        break;
+      default:
+        printf("Error! Event type incorrect.");
+        exit(1);
+  }
   
+  /* Call the report writing function */
+  fclose(report);
   
   return 0;
 }
