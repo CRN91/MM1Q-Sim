@@ -43,8 +43,17 @@ void initialise_sim()
 /* Update time average stats */
 void update_time_avg_stats()
 {
-
-}
+  // Calculate time since last event and update time last event to current time
+  float time_since_last_event = sim_clock - time_last_event; // Delta x in equations
+  time_last_event = sim_clock;
+  
+  /* Update stats where area_num_in_q is the cumulative area under the graph where the y axis is the number of customers in the queue
+  and the x axis is the time. We can later use this to calculate the average number of customers in the queue during the simulation.
+  The area_server_status is the cumulative area under the graph with y axis being the server utilisation (0 or 1 for idle / busy) and the
+  x axis is time. This will allow us to calculate the proportion of server utilisation during the simulation. */
+  
+  area_num_in_q += num_in_q * time_since_last_event;
+  area_server_status += server_status * time_since_last_event;
 
 /* Calculates and writes report to file */
 void report()
@@ -97,8 +106,7 @@ void depart()
     for (int i = 0; i < num_in_q; i++)
     {
       time_arrival[i] = time_arrival[i+1];
-    }
-    
+    }  
 }
 
 /* Next arrival event */
@@ -183,6 +191,7 @@ int main()
   {
     delays = 1000;
     // Timing event to determine next event
+    timing()
     
     // Update Time Average Statistical Counters
     
