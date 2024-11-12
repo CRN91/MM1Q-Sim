@@ -16,17 +16,21 @@ float *event_list_ptr = event_list;
 /* Initialises the sim */
 void initialise_sim()
 {
+  // Initialise Sim Variables
   sim_clock = 0.0;
   num_in_q = 0;
   time_last_event = 0;
   server_status = IDLE;
   
-  *(event_list_ptr + 1) = FLT_MAX; 
-  /* printf("pointer: %d\n", event_list_ptr);
-  printf("value: %f", *event_list_ptr); */
+  // Initialise Statistical Counters
+  customers_delayed = 0;
+  total_time_delayed = 0.0;
+  area_num_in_q = 0.0;
+  area_server_status = 0.0;
   
-  for (int i = 0; i < 2; i++){
-    printf("value: %f\n", event_list[i]);
+  // Initialise event list
+  *event_list_ptr = sim_clock + gen_rand_exponential(mean_interarrival);
+  *(event_list_ptr + 1) = FLT_MAX;
   }
   
 }
@@ -46,7 +50,21 @@ void report()
 /* Determine next event and advance sim clock */
 void timing()
 {
-
+  // Determine next event
+  int event_type;
+  int next_event_type = 0;
+  float min_time = FLT_MAX - 1;
+  for (event_type = 0; event_type < 2; event_type++)
+  {
+    if (event_list[event_type] < min_time)
+    {
+      min_time = event_list[event_type];
+      next_event_type = event_type;
+    }
+  }
+  
+  // Advance sim clock
+  sim_clock = min_time;
 }
 
 /* Next departure event */
@@ -70,10 +88,10 @@ float gen_rand_uniform()
   return random_variate;
 }
 
-/* Generate random exponentially distributed variate between 0 and 1 */
-float gen_rand_exponential(float uniform, float beta)
+/* Generate random exponentially distributed variate between 0 and 1 with a mean of beta */
+float gen_rand_exponential(float beta)
 {
-  return -1 * beta * log(uniform);
+  return -1 * beta * log(gen_rand_uniform());
 } 
 
 int main()
@@ -90,8 +108,10 @@ int main()
     exit(1);
   }  
   
+  // Load input parameters
   fscanf(config, "%f %f %d", &mean_interarrival, &mean_service, &delays_required);
   fclose(config);
+  
   printf("Mean interarrival time: %f\nMean service time: %f\nNumber of required delays: %d\n",mean_interarrival, mean_service, delays_required);
   for (int i = 0; i < 2; i++){
     uniform_rand = gen_rand_uniform();
