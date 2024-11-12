@@ -32,6 +32,12 @@ void initialise_sim()
   *event_list_ptr = sim_clock + gen_rand_exponential(mean_interarrival);
   *(event_list_ptr + 1) = FLT_MAX;
   }
+  
+  // Set all values in queue to -1
+  for (int i = 0; i < Q_LIMIT; i++)
+  {
+    time_arrival[i] = -1;
+  }
 }
 
 /* Update time average stats */
@@ -69,7 +75,30 @@ void timing()
 /* Next departure event */
 void depart()
 {
-
+  // If queue is empty
+  if (time_arrival[0] == -1){
+    // Make server idle
+    server_status = IDLE;
+    
+    // Remove departure from consideration
+    *(event_list_ptr + 1) = FLT_MAX;
+  } else{
+    // Reduce the queue by 1
+    num_in_q--;
+    
+    // Compute delay of customer entering service
+    total_delay += sim_clock - time_arrival[0];
+    customers_delayed++;
+    
+    // Schedule departure event
+    *(event_list_ptr + 1) = sim_clock + gen_rand_exponential(mean_service);
+    
+    // Move other customers in the queue up one place
+    for (int i = 0; i < num_in_q; i++)
+    {
+      time_arrival[i] = time_arrival[i+1];
+    }
+    
 }
 
 /* Next arrival event */
