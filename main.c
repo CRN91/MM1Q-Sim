@@ -55,10 +55,15 @@ void update_time_avg_stats()
   area_num_in_q += num_in_q * time_since_last_event;
   area_server_status += server_status * time_since_last_event;
 
-/* Calculates and writes report to file */
+/* Calculates performance metrics and writes report to file */
 void report()
 {
-
+  // Average delay and size in the queue and server utilisation | sim_clock should be total time at the end of the sim
+  float avg_q_delay = total_time_delayed / customers_delayed;
+  float avg_q_size = area_num_in_q / sim_clock;
+  float server_utilisation = area_server_status / sim_clock;
+  
+  fprintf(report, "\nAverage delay in the queue: %f\nAverage number of customers in the queue: %f\nAverage server utilisation: %f", avg_q_delay, avg_q_size, server_utilisation);
 }
 
 /* Determine next event and advance sim clock */
