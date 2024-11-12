@@ -8,8 +8,8 @@
 #define BUSY 1
 #define IDLE 0
 
-float mean_interarrival, mean_service, uniform_rand, sim_clock, time_last_event;
-int delays_required, num_in_q, server_status;
+float mean_interarrival, mean_service, uniform_rand, sim_clock, time_last_event, total_time_delayed, area_num_in_q, area_server_status, time_arrival[Q_LIMIT+1];
+int delays_required, num_in_q, server_status, customers_delayed;
 float event_list[2] = {0};
 float *event_list_ptr = event_list;
 
@@ -32,7 +32,6 @@ void initialise_sim()
   *event_list_ptr = sim_clock + gen_rand_exponential(mean_interarrival);
   *(event_list_ptr + 1) = FLT_MAX;
   }
-  
 }
 
 /* Update time average stats */
@@ -76,7 +75,31 @@ void depart()
 /* Next arrival event */
 void arrive()
 {
-
+  new_arrival = sim_clock + gen_rand_exponential(mean_interarrival);
+  
+  if (server_status == IDLE){
+    // Set delay for current customer as 0 and add 1 to number of delayed customers
+    float current_delay = 0.0;
+    customers_delayed++;
+  
+    // Make server busy
+    server_status = BUSY
+    
+    // Schedule departure event for current customer
+    *(event_list_ptr + 1) = sim_clock + gen_rand_exponential(mean_service);
+  } else {
+    // Number of customers in queue increases by 1
+    num_in_q++;
+    
+    // Stop simulation if queue is full
+    if (num_in_q > Q_LIMIT){
+      printf("Error! Stack Overflow in queue");
+      exit(1);
+    }
+    
+    // Add new customer to the queue
+    time_arrival[num_in_q] = sim_clock;
+  }
 }
 
 /* Generate random uniformly distribute variate between 0 and 1 */
