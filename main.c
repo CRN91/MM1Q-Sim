@@ -8,13 +8,22 @@
 #define BUSY 1
 #define IDLE 0
 
-float mean_interarrival, mean_service, uniform_rand, sim_clock, time_last_event, total_time_delayed, area_num_in_q, area_server_status, time_arrival[Q_LIMIT+1];
-int delays_required, num_in_q, server_status, customers_delayed;
+float mean_interarrival, mean_service, uniform_rand, sim_clock, time_last_event, total_time_delayed, area_num_in_q, area_server_status, time_arrival[Q_LIMIT+1], total_delay;
+int delays_required, num_in_q, server_status, customers_delayed, event_type;
 float event_list[2] = {0};
 float *event_list_ptr = event_list;
 
+void arrive(void);
+void depart(void);
+void update_time_avg_stats(void);
+void write_report(FILE *);
+int timing(void);
+float gen_rand_uniform(void);
+float gen_rand_exponential(float);
+
+
 /* Initialises the sim */
-void initialise_sim()
+void initialise_sim(void)
 {
   // Initialise Sim Variables
   sim_clock = 0.0;
@@ -31,7 +40,6 @@ void initialise_sim()
   // Initialise event list
   *event_list_ptr = sim_clock + gen_rand_exponential(mean_interarrival);
   *(event_list_ptr + 1) = FLT_MAX;
-  }
   
   // Set all values in queue to -1
   for (int i = 0; i < Q_LIMIT; i++)
@@ -41,7 +49,7 @@ void initialise_sim()
 }
 
 /* Update time average stats */
-void update_time_avg_stats()
+void update_time_avg_stats(void)
 {
   // Calculate time since last event and update time last event to current time
   float time_since_last_event = sim_clock - time_last_event; // Delta x in equations
@@ -54,9 +62,10 @@ void update_time_avg_stats()
   
   area_num_in_q += num_in_q * time_since_last_event;
   area_server_status += server_status * time_since_last_event;
+}
 
 /* Calculates performance metrics and writes report to file */
-void report()
+void write_report(FILE * report)
 {
   // Average delay and size in the queue and server utilisation | sim_clock should be total time at the end of the sim
   float avg_q_delay = total_time_delayed / customers_delayed;
@@ -67,30 +76,32 @@ void report()
 }
 
 /* Determine next event and advance sim clock */
-void timing()
+int timing()
 {
   // Determine next event
-  int event_type;
   int next_event_type = 0;
   float min_time = FLT_MAX - 1;
-  for (event_type = 0; event_type < 2; event_type++)
+  for (int i = 0; i < 2; i++)
   {
-    if (event_list[event_type] < min_time)
+    if (event_list[i] < min_time)
     {
-      min_time = event_list[event_type];
-      next_event_type = event_type;
+      min_time = event_list[i];
+      next_event_type = i;
     }
   }
   
   // Advance sim clock
   sim_clock = min_time;
+  
+  // 0 for arrival, 1 for departure
+  return next_event_type;
 }
 
 /* Next departure event */
 void depart()
 {
   // If queue is empty
-  if (time_arrival[0] == -1){
+  if (time_arrival[0] == -1){ 
     // Make server idle
     server_status = IDLE;
     
@@ -111,13 +122,16 @@ void depart()
     for (int i = 0; i < num_in_q; i++)
     {
       time_arrival[i] = time_arrival[i+1];
-    }  
+    }
+    time_arrival[num_in_q + 1] = -1;
+  }
 }
 
 /* Next arrival event */
 void arrive()
 {
-  new_arrival = sim_clock + gen_rand_exponential(mean_interarrival);
+  // Schedule next arrival
+  *(event_list_ptr) = sim_clock + gen_rand_exponential(mean_interarrival);
   
   if (server_status == IDLE){
     // Set delay for current customer as 0 and add 1 to number of delayed customers
@@ -125,13 +139,11 @@ void arrive()
     customers_delayed++;
   
     // Make server busy
-    server_status = BUSY
+    server_status = BUSY;
     
     // Schedule departure event for current customer
     *(event_list_ptr + 1) = sim_clock + gen_rand_exponential(mean_service);
   } else {
-    // Number of customers in queue increases by 1
-    num_in_q++;
     
     // Stop simulation if queue is full
     if (num_in_q > Q_LIMIT){
@@ -141,6 +153,9 @@ void arrive()
     
     // Add new customer to the queue
     time_arrival[num_in_q] = sim_clock;
+    
+    // Number of customers in queue increases by 1
+    num_in_q++;
   }
 }
 
@@ -159,7 +174,7 @@ float gen_rand_exponential(float beta)
   return -1 * beta * log(gen_rand_uniform());
 } 
 
-int main()
+int main(void)
 {
   FILE *config, *report;
   // Open files
@@ -177,36 +192,30 @@ int main()
   fscanf(config, "%f %f %d", &mean_interarrival, &mean_service, &delays_required);
   fclose(config);
   
-  printf("Mean interarrival time: %f\nMean service time: %f\nNumber of required delays: %d\n",mean_interarrival, mean_service, delays_required);
-  for (int i = 0; i < 2; i++){
-    uniform_rand = gen_rand_uniform();
-    printf("uniform random variate: %f\n", uniform_rand);
-    printf("exponential random variate: %f\n", gen_rand_exponential(uniform_rand, mean_interarrival));
-  }
+  //printf("Mean interarrival time: %f\nMean service time: %f\nNumber of required delays: %d\n",mean_interarrival, mean_service, delays_required);
   
   // Write heading of report
-  fprintf(report, "Test write");
+  fprintf(report, "Report");
   
   // Initialise sim
   initialise_sim();
   
   // Simulation Loop
-  int delays;
-  while (delays < delays_required)
+  for (int delays = 0; delays < delays_required; delays++)
   {
-    delays = 1000;
     // Timing event to determine next event
-    timing()
+    event_type = timing();
     
     // Update Time Average Statistical Counters
+    update_time_avg_stats();
     
     // Call correct event function
-    int event_type = 1;
-    switch (event_type)
-    {
-      case 1:
+    switch (event_type){
+      case 0: // arrival
+        arrive();
         break;
-      case 2:
+      case 1: // departure
+        depart();
         break;
       default:
         printf("Error! Event type incorrect.");
@@ -215,6 +224,7 @@ int main()
   }
   
   // Call the report writing function
+  write_report(report);
   fclose(report);
   
   return 0;
