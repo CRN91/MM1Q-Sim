@@ -86,13 +86,28 @@ int timing()
 {
   // Determine next event
   int next_event_type = 0;
-  float min_time = FLT_MAX - 1;
-  for (int i = 0; i < 3; i++)
-  {
-    if (event_list[i] < min_time)
-    {
-      min_time = event_list[i];
-      next_event_type = i;
+  float min_time;
+  
+  // Normal sim conditions
+  if (sim_clock < end_time){
+	  min_time = FLT_MAX - 1;
+	  for (int i = 0; i < 2; i++)
+	  {
+	    if (event_list[i] < min_time)
+	    {
+	      min_time = event_list[i];
+	      next_event_type = i;
+	    }
+	  }
+  // No longer accepting new customers
+  } else{ 
+    // Deplete queue
+    if (time_arrival[0] != -1){
+      next_event_type = 1; // Departure
+      min_time = event_list[1];
+    } else{ // Empty queue
+      next_event_type = 2; // End sim
+      min_time = sim_clock;
     }
   }
   
@@ -135,7 +150,7 @@ void depart()
 
 /* Next arrival event */
 void arrive()
-{
+{ 
   // Schedule next arrival
   *(event_list_ptr) = sim_clock + gen_rand_exponential(mean_interarrival);
   
@@ -197,7 +212,7 @@ int main(void)
   fclose(config);
   
   // Write heading of report
-  fprintf(report, "Single Server Queueing System Simulation Report\n\nInput parameters\nMean interarrival time: %f minutes\nMean service time: %13f minutes\nSimulation end time: %11f minutes\n",mean_interarrival, mean_service, delays_required);
+  fprintf(report, "Single Server Queueing System Simulation Report\n\nInput parameters\nMean interarrival time: %12f minutes\nMean service time: %17f minutes\nStop accepting arrivals at: %f minutes\n",mean_interarrival, mean_service, end_time);
   
   // Initialise sim
   initialise_sim();

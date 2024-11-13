@@ -1,12 +1,12 @@
 Single Server Queueing System Simulation Report
 
 Input parameters
-Mean interarrival time: 1.000000 minutes
-Mean service time:      0.500000 minutes
-Simulation end time:    0.000000 minutes
+Mean interarrival time:     1.000000 minutes
+Mean service time:          0.500000 minutes
+Stop accepting arrivals at: 480.000000 minutes
 
 Simulation stats
-Average delay in the queue: 0.619 minutes
-Average queue length:       0.630 customers
-Average server utilisation: 53.847%
-Duration of simulation:     480.000 minutes
+Average delay in the queue: 0.445 minutes
+Average queue length:       0.481 customers
+Average server utilisation: 54.593%
+Duration of simulation:     480.146 minutes
