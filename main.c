@@ -8,9 +8,9 @@
 #define BUSY 1
 #define IDLE 0
 
-float mean_interarrival, mean_service, uniform_rand, sim_clock, time_last_event, total_time_delayed, area_num_in_q, area_server_status, time_arrival[Q_LIMIT+1];
+float mean_interarrival, mean_service, uniform_rand, sim_clock, time_last_event, total_time_delayed, area_num_in_q, area_server_status, time_arrival[Q_LIMIT+1], end_time;
 int delays_required, num_in_q, server_status, customers_delayed, event_type;
-float event_list[2] = {0};
+float event_list[3] = {0};
 float *event_list_ptr = event_list;
 
 void arrive(void);
@@ -42,6 +42,7 @@ void initialise_sim(void)
   // Initialise event list
   *event_list_ptr = gen_rand_exponential(mean_interarrival);
   *(event_list_ptr + 1) = FLT_MAX;
+  *(event_list_ptr + 2) = end_time;
   
   // Set all values in queue to -1
   for (int i = 0; i < Q_LIMIT; i++)
@@ -77,18 +78,16 @@ void write_report(FILE * report)
   float avg_q_size = area_num_in_q / sim_clock;
   float server_utilisation = area_server_status / sim_clock;
   
-  fprintf(report, "\nSimulation stats\nAverage delay in the queue: %f minutes\nAverage number of customers in the queue: %f\nAverage server utilisation: %f\nDuration of simulation: %f minutes", avg_q_delay, avg_q_size, server_utilisation, sim_clock);
+  fprintf(report, "\nSimulation stats\nAverage delay in the queue: %0.3f minutes\nAverage queue length: %11.3f customers\nAverage server utilisation: %0.3f%%\nDuration of simulation: %11.3f minutes", avg_q_delay, avg_q_size, server_utilisation*100, sim_clock);
 }
 
 /* Determine next event and advance sim clock */
 int timing()
 {
-  //printf("sim clock: %f\nnum in q: %d\narrival: %f\ndeparture: %f\n\n\n", sim_clock, num_in_q, event_list[0], event_list[1]);
-
   // Determine next event
   int next_event_type = 0;
   float min_time = FLT_MAX - 1;
-  for (int i = 0; i < 2; i++)
+  for (int i = 0; i < 3; i++)
   {
     if (event_list[i] < min_time)
     {
@@ -100,7 +99,7 @@ int timing()
   // Advance sim clock
   sim_clock = min_time;
   
-  // 0 for arrival, 1 for departure
+  // 0 for arrival, 1 for departure, 2 for end time condition
   return next_event_type;
 }
 
@@ -194,20 +193,17 @@ int main(void)
   }  
   
   // Load input parameters
-  fscanf(config, "%f %f %d", &mean_interarrival, &mean_service, &delays_required);
+  fscanf(config, "%f %f %f", &mean_interarrival, &mean_service, &end_time);
   fclose(config);
   
-  //printf("Mean interarrival time: %f\nMean service time: %f\nNumber of required delays: %d\n",mean_interarrival, mean_service, delays_required);
-  
   // Write heading of report
-  fprintf(report, "Single Server Queueing System Simulation Report\n\nInput parameters\nMean interarrival time: %f minutes\nMean service time: %f minutes\nNumber of customers: %d\n",mean_interarrival, mean_service, delays_required);
+  fprintf(report, "Single Server Queueing System Simulation Report\n\nInput parameters\nMean interarrival time: %f minutes\nMean service time: %13f minutes\nSimulation end time: %11f minutes\n",mean_interarrival, mean_service, delays_required);
   
   // Initialise sim
   initialise_sim();
   
   // Simulation Loop
-  while (customers_delayed < delays_required)
-  {
+  do {
     // Timing event to determine next event
     event_type = timing();
     
@@ -224,12 +220,13 @@ int main(void)
       case 1: // departure
         depart();
         break;
+      case 2: // end_time
+        break;
       default:
         printf("Error! Event type incorrect.");
         exit(1);
-    
     }
-  }
+  } while (event_type != 2);
   
   // Call the report writing function
   write_report(report);
