@@ -83,7 +83,7 @@ void write_report(FILE * report)
 /* Determine next event and advance sim clock */
 int timing()
 {
-  // printf("sim clock: %f\nnum in q: %d\narrival: %f\ndeparture: %f\n\n\n", sim_clock, num_in_q, event_list[0], event_list[1]);
+  //printf("sim clock: %f\nnum in q: %d\narrival: %f\ndeparture: %f\n\n\n", sim_clock, num_in_q, event_list[0], event_list[1]);
 
   // Determine next event
   int next_event_type = 0;
@@ -206,8 +206,7 @@ int main(void)
   initialise_sim();
   
   // Simulation Loop
-  //printf("delays required %d\n",delays_required);
-  for (int delays = 0; delays < delays_required; delays++)
+  while (customers_delayed < delays_required)
   {
     // Timing event to determine next event
     event_type = timing();
