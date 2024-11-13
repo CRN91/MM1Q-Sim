@@ -1,4 +1,4 @@
 Report
-Average delay in the queue: 0.000000
-Average number of customers in the queue: -0.029148
-Average server utilisation: 0.510703
+Average delay in the queue: 0.586335
+Average number of customers in the queue: 0.589372
+Average server utilisation: 0.521296

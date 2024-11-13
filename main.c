@@ -8,7 +8,7 @@
 #define BUSY 1
 #define IDLE 0
 
-float mean_interarrival, mean_service, uniform_rand, sim_clock, time_last_event, total_time_delayed, area_num_in_q, area_server_status, time_arrival[Q_LIMIT+1], total_delay;
+float mean_interarrival, mean_service, uniform_rand, sim_clock, time_last_event, total_time_delayed, area_num_in_q, area_server_status, time_arrival[Q_LIMIT+1];
 int delays_required, num_in_q, server_status, customers_delayed, event_type;
 float event_list[2] = {0};
 float *event_list_ptr = event_list;
@@ -38,7 +38,7 @@ void initialise_sim(void)
   area_server_status = 0.0;
   
   // Initialise event list
-  *event_list_ptr = sim_clock + gen_rand_exponential(mean_interarrival);
+  *event_list_ptr = gen_rand_exponential(mean_interarrival);
   *(event_list_ptr + 1) = FLT_MAX;
   
   // Set all values in queue to -1
@@ -46,6 +46,8 @@ void initialise_sim(void)
   {
     time_arrival[i] = -1;
   }
+  
+  //printf("arrival: %f\ndeparture: %f\n", event_list[0], event_list[1]);
 }
 
 /* Update time average stats */
@@ -53,6 +55,7 @@ void update_time_avg_stats(void)
 {
   // Calculate time since last event and update time last event to current time
   float time_since_last_event = sim_clock - time_last_event; // Delta x in equations
+  //printf("time since last event %f\n",time_since_last_event); 
   time_last_event = sim_clock;
   
   /* Update stats where area_num_in_q is the cumulative area under the graph where the y axis is the number of customers in the queue
@@ -78,6 +81,8 @@ void write_report(FILE * report)
 /* Determine next event and advance sim clock */
 int timing()
 {
+  // printf("sim clock: %f\nnum in q: %d\narrival: %f\ndeparture: %f\n\n\n", sim_clock, num_in_q, event_list[0], event_list[1]);
+
   // Determine next event
   int next_event_type = 0;
   float min_time = FLT_MAX - 1;
@@ -112,7 +117,7 @@ void depart()
     num_in_q--;
     
     // Compute delay of customer entering service
-    total_delay += sim_clock - time_arrival[0];
+    total_time_delayed += sim_clock - time_arrival[0];
     customers_delayed++;
     
     // Schedule departure event
@@ -123,7 +128,7 @@ void depart()
     {
       time_arrival[i] = time_arrival[i+1];
     }
-    time_arrival[num_in_q + 1] = -1;
+    time_arrival[num_in_q] = -1;
   }
 }
 
@@ -134,8 +139,7 @@ void arrive()
   *(event_list_ptr) = sim_clock + gen_rand_exponential(mean_interarrival);
   
   if (server_status == IDLE){
-    // Set delay for current customer as 0 and add 1 to number of delayed customers
-    float current_delay = 0.0;
+    // Add 1 to customers delayed but don't add any time delayed as they are served instantly
     customers_delayed++;
   
     // Make server busy
@@ -144,7 +148,6 @@ void arrive()
     // Schedule departure event for current customer
     *(event_list_ptr + 1) = sim_clock + gen_rand_exponential(mean_service);
   } else {
-    
     // Stop simulation if queue is full
     if (num_in_q > Q_LIMIT){
       printf("Error! Stack Overflow in queue");
@@ -201,6 +204,7 @@ int main(void)
   initialise_sim();
   
   // Simulation Loop
+  printf("delays required %d\n",delays_required);
   for (int delays = 0; delays < delays_required; delays++)
   {
     // Timing event to determine next event
@@ -208,6 +212,8 @@ int main(void)
     
     // Update Time Average Statistical Counters
     update_time_avg_stats();
+    
+    printf("cust_delay: %d\ntotal time delayed: %f\n", customers_delayed, total_time_delayed);
     
     // Call correct event function
     switch (event_type){
@@ -220,6 +226,7 @@ int main(void)
       default:
         printf("Error! Event type incorrect.");
         exit(1);
+    
     }
   }
   
