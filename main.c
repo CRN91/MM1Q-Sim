@@ -77,7 +77,7 @@ void write_report(FILE * report)
   float avg_q_size = area_num_in_q / sim_clock;
   float server_utilisation = area_server_status / sim_clock;
   
-  fprintf(report, "\nAverage delay in the queue: %f\nAverage number of customers in the queue: %f\nAverage server utilisation: %f", avg_q_delay, avg_q_size, server_utilisation);
+  fprintf(report, "\nSimulation stats\nAverage delay in the queue: %f minutes\nAverage number of customers in the queue: %f\nAverage server utilisation: %f\nDuration of simulation: %f minutes", avg_q_delay, avg_q_size, server_utilisation, sim_clock);
 }
 
 /* Determine next event and advance sim clock */
@@ -200,7 +200,7 @@ int main(void)
   //printf("Mean interarrival time: %f\nMean service time: %f\nNumber of required delays: %d\n",mean_interarrival, mean_service, delays_required);
   
   // Write heading of report
-  fprintf(report, "Report");
+  fprintf(report, "Single Server Queueing System Simulation Report\n\nInput parameters\nMean interarrival time: %f minutes\nMean service time: %f minutes\nNumber of customers: %d\n",mean_interarrival, mean_service, delays_required);
   
   // Initialise sim
   initialise_sim();

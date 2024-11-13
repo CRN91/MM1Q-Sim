@@ -1,4 +1,12 @@
-Report
-Average delay in the queue: 0.474578
-Average number of customers in the queue: 0.480512
-Average server utilisation: 0.495775
+Single Server Queueing System Simulation Report
+
+Input parameters
+Mean interarrival time: 1.000000 minutes
+Mean service time: 0.500000 minutes
+Number of customers: 1000
+
+Simulation stats
+Average delay in the queue: 0.400174 minutes
+Average number of customers in the queue: 0.393016
+Average server utilisation: 0.473886
+Duration of simulation: 1018.214111 minutes
