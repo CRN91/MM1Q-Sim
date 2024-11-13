@@ -21,10 +21,12 @@ int timing(void);
 float gen_rand_uniform(void);
 float gen_rand_exponential(float);
 
-
 /* Initialises the sim */
 void initialise_sim(void)
 {
+  // Seed random number generator with current time
+  srand(time(NULL));
+
   // Initialise Sim Variables
   sim_clock = 0.0;
   num_in_q = 0;
@@ -204,7 +206,7 @@ int main(void)
   initialise_sim();
   
   // Simulation Loop
-  printf("delays required %d\n",delays_required);
+  //printf("delays required %d\n",delays_required);
   for (int delays = 0; delays < delays_required; delays++)
   {
     // Timing event to determine next event
@@ -213,7 +215,7 @@ int main(void)
     // Update Time Average Statistical Counters
     update_time_avg_stats();
     
-    printf("cust_delay: %d\ntotal time delayed: %f\n", customers_delayed, total_time_delayed);
+    //printf("cust_delay: %d\ntotal time delayed: %f\n", customers_delayed, total_time_delayed);
     
     // Call correct event function
     switch (event_type){
