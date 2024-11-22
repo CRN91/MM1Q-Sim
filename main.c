@@ -243,6 +243,7 @@ int main(void)
     }
   } while (event_type != 2);
   
+  printf("Queue length: %d", num_in_q);
   // Call the report writing function
   write_report(report);
   fclose(report);
